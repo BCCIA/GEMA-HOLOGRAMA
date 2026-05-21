@@ -40,22 +40,16 @@ body {
 }
 
 #chat-container {
-  width: 60%;
-  max-width: 800px;
-  height: calc(90vh - 60px);
+  /* Proporción portrait para avatar de cuerpo completo */
+  width: 100%;
+  height: 100%;
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-#chat-container:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  border: none;
 }
 
 .iframe-wrapper {
@@ -66,14 +60,16 @@ body {
   bottom: 0;
   overflow: hidden;
   width: 100%;
+  z-index: 1;
 }
 
 .did-chat-iframe {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  /* Recorte mínimo: solo elimina el borde del card de D-ID sin tocar cabeza ni pies */
+  top: -2%;
+  left: -2%;
+  width: 104%;
+  height: 104%;
   border: none;
 }
 
@@ -158,8 +154,11 @@ img {
 
 .home-information {
   padding-left: 1.5rem;
-  border-left: 5px solid var(--white-color);
+  border-left: 4px solid var(--first-color);
   z-index: var(--z-tooltip);
+  position: fixed;
+  left: 2.5rem;
+  bottom: 2.5rem;
 }
 
 .home-pressent {
@@ -188,42 +187,19 @@ img {
   );
 }
 
-.header,
-.footer {
-  height: 7%;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(8px);
-  position: absolute;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  font-weight: 500;
-  color: #333;
-}
-
-.header {
-  top: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 20px 20px 0 0;
-}
-
-.footer {
-  bottom: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 0 0 20px 20px;
-}
-
 .home-img {
+  /* Centrado en pantalla, proporción portrait para cuerpo completo */
   position: absolute;
-  right: 20%;
-  bottom: 80px;
-  width: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 36%;
+  max-width: 480px;
+  min-width: 280px;
+  height: 94vh;
   z-index: var(--z-normal);
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
 }
 
@@ -269,8 +245,8 @@ img {
 
 @media screen and (max-width: 1200px) {
   .home-img {
-    right: 3%;
-    width: 80%;
+    width: 44%;
+    height: 94vh;
   }
 }
 
@@ -292,14 +268,18 @@ img {
   }
 
   #chat-container {
-    height: 80vh;
-    margin: 0;
     width: 100%;
+    height: 100%;
   }
 
   .home-img {
-    position: initial;
-    width: 100%;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 85%;
+    max-width: 400px;
+    height: 90vh;
   }
 
   .home-social {
@@ -381,22 +361,63 @@ img {
   }
 }
 
-#refresh-btn {
+/* ----------------- BOTONES DE CONTROL (TOP RIGHT) ----------------- */
+
+.control-buttons {
   position: fixed;
   top: 20px;
   right: 20px;
-  font-size: 36px;
-  color: white;
-  background: transparent;
-  border: none;
-  cursor: pointer;
+  display: flex;
+  gap: 15px; /* Espacio entre los botones */
   z-index: 9999;
+}
+
+.control-buttons ion-icon {
+  font-size: 36px;
+  color: var(--white-color);
+  background: rgba(0, 0, 0, 0.3); /* Un fondo sutil para mejor contraste */
+  border-radius: 50%;
+  padding: 5px;
+  cursor: pointer;
   opacity: 0.6;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-#refresh-btn:hover {
+.control-buttons ion-icon:hover {
   opacity: 1;
-  transform: rotate(20deg);
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(31, 101, 194, 0.6); /* Brillo azul (tu color first-color) */
 }
 
+/* Animación específica para el botón de refrescar al hacer hover */
+#refresh-btn:hover {
+  transform: rotate(180deg) scale(1.1);
+}
+
+/* ------------------------------------------------ */
+/* NUEVO: BLOQUEO INVISIBLE (GHOST LAYER)           */
+/* ------------------------------------------------ */
+
+#lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  
+  /* Fondo transparente para que se vea el chat debajo */
+  background: transparent; 
+  
+  /* Z-index alto para interceptar el clic antes que el iframe */
+  z-index: 50; 
+  
+  cursor: pointer; /* Muestra la manito para indicar que hay interacción */
+}
+
+/* Clase que JS usará para eliminar el bloqueo */
+.unlocked {
+  display: none !important;
+}

@@ -1,32 +1,47 @@
-// ----------------- SEGURIDAD: PROTECCIÓN POR PIN -----------------
+// ----------------- CONFIGURACIÓN DE SEGURIDAD -----------------
 const PIN_CORRECTO = "5703";
 
-function accesoPermitido() {
-  return localStorage.getItem("pinAccesoAutorizado") === "true";
+function verificarEstadoBloqueo() {
+  const lockScreen = document.getElementById("lock-overlay");
+  if (!lockScreen) return;
+
+  // Si ya se ingresó el PIN anteriormente, quitamos el escudo invisible
+  if (localStorage.getItem("pinAccesoAutorizado") === "true") {
+    desbloquearPantalla();
+  }
+
+  // Evento: Al hacer clic en la capa invisible, pedir PIN
+  lockScreen.addEventListener("click", () => {
+    solicitarPin();
+  });
 }
 
 function solicitarPin() {
-  const pinIngresado = prompt("Por favor, introduce el PIN de acceso:");
+  setTimeout(() => {
+    const pinIngresado = prompt("🔒 STAND PROTEGIDO\nPor favor, introduce el PIN de acceso:");
 
-  if (pinIngresado === PIN_CORRECTO) {
-    localStorage.setItem("pinAccesoAutorizado", "true");
-  } else {
-    alert("PIN incorrecto. No tienes permiso para acceder.");
-    document.body.innerHTML = "<h1 style='text-align:center; padding-top:20%; font-family:sans-serif;'>Acceso denegado</h1>";
-    throw new Error("PIN incorrecto - ejecución detenida");
+    if (pinIngresado === PIN_CORRECTO) {
+      localStorage.setItem("pinAccesoAutorizado", "true");
+      desbloquearPantalla();
+    } else if (pinIngresado !== null) {
+      alert("❌ PIN incorrecto.");
+    }
+  }, 100);
+}
+
+function desbloquearPantalla() {
+  const lockScreen = document.getElementById("lock-overlay");
+  if (lockScreen) {
+    lockScreen.remove(); 
   }
 }
 
-if (!accesoPermitido()) {
-  solicitarPin();
-}
+document.addEventListener("DOMContentLoaded", verificarEstadoBloqueo);
 
-// ----------------- SEGURIDAD Y NAVEGACIÓN -----------------
+// ----------------- SEGURIDAD EXTRA -----------------
 
-// Deshabilitar clic derecho en la página principal
 document.addEventListener("contextmenu", (e) => e.preventDefault());
 
-// Función para deshabilitar combinaciones de teclas (F12, Ctrl+Shift+I, etc.)
 function ctrlShiftKey(e, keyCode) {
   return e.ctrlKey && e.shiftKey && e.keyCode === keyCode.charCodeAt(0);
 }
@@ -41,6 +56,8 @@ document.onkeydown = (e) => {
   )
     return false;
 };
+
+// ----------------- MENÚ RESPONSIVE -----------------
 
 const showMenu = (toggleId, navId) => {
   const toggle = document.getElementById(toggleId),
@@ -61,7 +78,7 @@ class DIDChat {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
     this.chatUrl =
-      "https://studio.d-id.com/agents/share?id=agt_xQ9DjGPl&utm_source=copy&key=WVhWMGFEQjhOamRsT0RObVpqQTVZbU5tTXpSa1pEVmlZbVpsWVRNM09uQm5aR2xhYVdOSk1rdHFlVlpyYmpCdFRHaFRVQT09";
+      "https://studio.d-id.com/agents/share?id=v2_agt_bsSJhi_h&utm_source=copy&key=WjI5dloyeGxMVzloZFhSb01ud3hNRE0yTlRVM09EUTRPRE0xTlRBeU1qUXlOVFk2V0RsU1ZtbDZMV0paT0dkRlFVcHBPVE40VEVaRw==";
     this.iframe = null;
     this.init();
   }
@@ -71,6 +88,8 @@ class DIDChat {
   }
 
   createIframe() {
+    if (this.container.querySelector('.iframe-wrapper')) return;
+
     const wrapper = document.createElement("div");
     wrapper.className = "iframe-wrapper";
     this.iframe = document.createElement("iframe");
@@ -152,7 +171,7 @@ gsap.from(".home-social", {
   stagger: 0.2,
 });
 
-// ----------------- REFRESCO AUTOMÁTICO CADA 5 MINUTOS -----------------
+// ----------------- REFRESCO AUTOMÁTICO -----------------
 
 function iniciarRefresco() {
   let refreshTimeout;
@@ -162,18 +181,19 @@ function iniciarRefresco() {
   if (!message) {
     message = document.createElement('div');
     message.id = 'refresh-message';
-    message.innerText = 'Refrescando...';
+    message.innerText = '¿Sigues ahí? Refrescando en 5s...';
     message.style.position = 'fixed';
     message.style.top = '50%';
     message.style.left = '50%';
     message.style.transform = 'translate(-50%, -50%)';
-    message.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    message.style.backgroundColor = 'rgba(0,0,0,0.9)';
     message.style.color = '#fff';
-    message.style.padding = '20px 40px';
-    message.style.borderRadius = '10px';
-    message.style.fontSize = '24px';
+    message.style.padding = '30px 50px';
+    message.style.borderRadius = '15px';
+    message.style.fontSize = '20px';
     message.style.zIndex = '9999';
     message.style.display = 'none';
+    message.style.boxShadow = '0 0 20px rgba(255,255,255,0.2)';
     document.body.appendChild(message);
   }
 
@@ -203,14 +223,41 @@ function iniciarRefresco() {
   setTimeout(startRefreshSequence, 5 * 60 * 1000);
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  const refreshBtn = document.getElementById("refresh-btn");
+iniciarRefresco();
 
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", () => {
+// ----------------- CONTROL DE BOTONES (LOGICA MODIFICADA) -----------------
+
+document.addEventListener("DOMContentLoaded", () => {
+  const refreshBtn = document.getElementById("refresh-btn");
+  const lockBtn = document.getElementById("lock-btn");
+
+  // BOTÓN DE CANDADO (Siempre bloquea y recarga)
+  if (lockBtn) {
+    lockBtn.addEventListener("click", () => {
+      localStorage.removeItem("pinAccesoAutorizado");
       location.reload();
     });
   }
+
+  // BOTÓN DE REFRESCO (Lógica condicional)
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", () => {
+      // Guardamos la respuesta del usuario en una variable
+      // true = Aceptar, false = Cancelar
+      const cerrarSesion = confirm("¿Deseas limpiar caché y recargar? Esto también bloqueará la sesión.\n\n[ACEPTAR] = Bloquear y Recargar\n[CANCELAR] = Solo Recargar (Mantener sesión)");
+
+      if (cerrarSesion) {
+        // Opción ACEPTAR: Limpiamos storage (se pierde el PIN guardado)
+        localStorage.clear();
+        sessionStorage.clear();
+      } 
+      // Si el usuario da CANCELAR, saltamos el bloque 'if' anterior
+      // y pasamos directamente a la recarga, manteniendo el storage intacto.
+
+      // Recarga forzada (Cache Buster)
+      const url = new URL(window.location.href);
+      url.searchParams.set("r", Date.now().toString()); 
+      window.location.href = url.toString(); 
+    });
+  }
 });
-
-
