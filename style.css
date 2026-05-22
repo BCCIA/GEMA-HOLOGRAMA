@@ -139,7 +139,7 @@ img {
 
 .l-main {
   height: calc(100vh - var(--header-height));
-  background-color: var(--black-color);
+  background-color: transparent;
 }
 
 .home {
@@ -201,6 +201,8 @@ img {
   display: flex;
   justify-content: center;
   align-items: center;
+  /* lighten = max(avatar, video) por canal: avatar siempre gana salvo en negro puro */
+  mix-blend-mode: lighten;
 }
 
 .home-social {
@@ -420,4 +422,21 @@ img {
 /* Clase que JS usará para eliminar el bloqueo */
 .unlocked {
   display: none !important;
+}
+
+/* ------------------------------------------------ */
+/* VIDEO DE FONDO                                   */
+/* ------------------------------------------------ */
+
+#bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  pointer-events: none;
+  /* Video oscuro para que el avatar siempre gane protagonismo */
+  filter: brightness(1);
 }
