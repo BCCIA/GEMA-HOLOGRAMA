@@ -85,6 +85,7 @@ class DIDChat {
 
   init() {
     this.createIframe();
+    this.setupWatchdog();
   }
 
   createIframe() {
@@ -100,6 +101,32 @@ class DIDChat {
 
     wrapper.appendChild(this.iframe);
     this.container.appendChild(wrapper);
+  }
+
+  reloadIframe() {
+    if (this.iframe) {
+      this.iframe.src = this.chatUrl;
+    }
+  }
+
+  setupWatchdog() {
+    // Si el iframe no carga en 20 segundos, lo recarga
+    const loadTimer = setTimeout(() => this.reloadIframe(), 20000);
+    this.iframe.addEventListener("load", () => clearTimeout(loadTimer), { once: true });
+
+    // Recarga el iframe cada 9 minutos para evitar que D-ID apague el stream
+    setInterval(() => this.reloadIframe(), 9 * 60 * 1000);
+
+    // Si la pantalla estuvo oculta más de 2 minutos, recarga al volver
+    let hiddenAt = null;
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        hiddenAt = Date.now();
+      } else if (hiddenAt && Date.now() - hiddenAt > 2 * 60 * 1000) {
+        this.reloadIframe();
+        hiddenAt = null;
+      }
+    });
   }
 }
 
@@ -261,3 +288,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
