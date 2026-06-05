@@ -96,7 +96,7 @@ class DIDChat {
     this.iframe = document.createElement("iframe");
     this.iframe.className = "did-chat-iframe fade-in";
     this.iframe.src = this.chatUrl;
-    this.iframe.allow = "camera;microphone;clipboard-write";
+    this.iframe.allow = "microphone *; camera *; autoplay *; encrypted-media *; fullscreen *; display-capture *;";
     this.iframe.title = "D-ID Chat Interface";
 
     wrapper.appendChild(this.iframe);
@@ -196,6 +196,80 @@ gsap.from(".home-social", {
   y: 25,
   ease: "expo.out",
   stagger: 0.2,
+});
+
+// ----------------- OVERLAY: BOTONES CONVERSAR / FOTO -----------------
+
+document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('interaction-overlay');
+    const btnShowAvatar = document.getElementById('btn-show-avatar');
+    const btnPlayVideo = document.getElementById('btn-play-video');
+    const videoElement = document.getElementById('playback-video');
+
+    if (!overlay || !btnShowAvatar || !btnPlayVideo || !videoElement) return;
+
+    const VIDEO_URL = "https://www.dropbox.com/scl/fi/bu8cpm09slawb896ypch4/Gema-Fotos.mp4?rlkey=04nzxdp24l67l3miiufckcpsq&st=7d0c5mrt&dl=0&raw=1";
+    const SECRET_VIDEO_URL = "https://www.dropbox.com/scl/fi/3t522av1nzuj1o8lyic6b/f85c6ddb984de7b73cc23500f356a62e_1.mp4?rlkey=ea7zosc8ynkxygszcurls1mvt&st=5p4tkds6&dl=0&raw=1";
+
+    videoElement.src = VIDEO_URL;
+    let secretVideoActive = false;
+
+    function hideOverlay() {
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+        overlay.style.backdropFilter = 'none';
+        overlay.style.webkitBackdropFilter = 'none';
+        setTimeout(() => { overlay.style.display = 'none'; }, 600);
+    }
+
+    function showOverlay() {
+        videoElement.pause(); videoElement.currentTime = 0;
+        videoElement.classList.add('video-hidden');
+        if (secretVideoActive) {
+            secretVideoActive = false;
+            videoElement.src = VIDEO_URL;
+        }
+        overlay.style.display = '';
+        overlay.style.backdropFilter = '';
+        overlay.style.webkitBackdropFilter = '';
+        overlay.style.pointerEvents = '';
+        requestAnimationFrame(() => { overlay.style.opacity = ''; });
+    }
+
+    videoElement.addEventListener('ended', showOverlay);
+
+    btnShowAvatar.addEventListener('click', hideOverlay);
+
+    btnPlayVideo.addEventListener('click', () => {
+        videoElement.src = VIDEO_URL;
+        hideOverlay();
+        videoElement.classList.remove('video-hidden');
+        setTimeout(() => { videoElement.play().catch(e => console.warn("Autoplay bloqueado:", e)); }, 300);
+    });
+
+    // --- Botón secreto: triple clic en la imagen del avatar ---
+    const avatarImg = document.querySelector('.overlay-avatar-img');
+    if (avatarImg) {
+        let clickCount = 0;
+        let clickTimer = null;
+
+        avatarImg.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clickCount++;
+            if (clickCount === 1) {
+                clickTimer = setTimeout(() => { clickCount = 0; }, 800);
+            }
+            if (clickCount >= 3) {
+                clearTimeout(clickTimer);
+                clickCount = 0;
+                secretVideoActive = true;
+                videoElement.src = SECRET_VIDEO_URL;
+                hideOverlay();
+                videoElement.classList.remove('video-hidden');
+                setTimeout(() => { videoElement.play().catch(err => console.warn("Autoplay bloqueado:", err)); }, 300);
+            }
+        });
+    }
 });
 
 // ----------------- REFRESCO AUTOMÁTICO -----------------

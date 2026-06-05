@@ -31,8 +31,28 @@
           <div id="chat-container" class="fade-in">
             
             <!-- ✅ CAPA DE BLOQUEO INVISIBLE -->
-            <!-- Cubre el chat. Al hacer clic pide el PIN. -->
             <div id="lock-overlay" title="Toque para iniciar"></div>
+
+            <!-- OVERLAY MINIMALISTA: IMAGEN + BOTONES -->
+            <div id="interaction-overlay" class="interaction-overlay">
+                <div class="interaction-content">
+                    <img src="./avatar-preview.png" alt="Avatar Preview" class="overlay-avatar-img">
+                    <h3>Hola, selecciona una opción:</h3>
+                    <div class="interaction-buttons">
+                        <button id="btn-show-avatar" class="interact-btn glass-btn">
+                            <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+                            Conversar
+                        </button>
+                        <button id="btn-play-video" class="interact-btn glass-btn">
+                            <ion-icon name="play-circle-outline"></ion-icon>
+                            Foto
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPRODUCTOR DE VIDEO -->
+            <video id="playback-video" class="playback-video video-hidden" playsinline></video>
 
           </div>
         </div>
