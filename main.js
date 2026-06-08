@@ -78,7 +78,7 @@ class DIDChat {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
     this.chatUrl =
-      "https://studio.d-id.com/agents/share?id=v2_agt_mzi1flpH&utm_source=copy&key=Y2tfdjluUm12SUxTQ3hSQTMtckdrempE";
+      "https://studio.d-id.com/agents/share?id=v2_agt_LK9bQcu3&utm_source=copy&key=Y2tfUlFRMzllcDBYT090bFFaTTNJWWxo";
     this.iframe = null;
     this.init();
   }
