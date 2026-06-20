@@ -105,7 +105,8 @@ class DIDChat {
 
   reloadIframe() {
     if (this.iframe) {
-      this.iframe.src = this.chatUrl;
+      this.iframe.src = '';
+      setTimeout(() => { this.iframe.src = this.chatUrl; }, 500);
     }
   }
 
@@ -132,6 +133,11 @@ class DIDChat {
 
 document.addEventListener("DOMContentLoaded", () => {
   const chat = new DIDChat("chat-container");
+
+  const bgVideo = document.getElementById('bg-video');
+  if (bgVideo) {
+    bgVideo.addEventListener('pause', () => bgVideo.play().catch(() => {}));
+  }
 });
 
 // ----------------- GSAP ANIMACIONES -----------------
