@@ -85,7 +85,8 @@ class DIDChat {
 
   init() {
     this.createIframe();
-    this.setupWatchdog();
+    this.armLoadWatchdog();
+    this.setupPeriodicReload();
   }
 
   createIframe() {
@@ -106,17 +107,25 @@ class DIDChat {
   reloadIframe() {
     if (this.iframe) {
       this.iframe.src = '';
-      setTimeout(() => { this.iframe.src = this.chatUrl; }, 500);
+      setTimeout(() => {
+        this.iframe.src = this.chatUrl;
+        this.armLoadWatchdog();
+      }, 500);
     }
   }
 
-  setupWatchdog() {
-    // Si el iframe no carga en 20 segundos, lo recarga
+  armLoadWatchdog() {
+    // Si esta carga (inicial o de una recarga) no termina en 20s, reintenta.
+    // Esto se re-arma en cada reloadIframe(), no solo al inicio, para que una
+    // recarga fallida (pantalla negra) se autocorrija en vez de esperar al
+    // siguiente ciclo de 5 minutos.
     const loadTimer = setTimeout(() => this.reloadIframe(), 20000);
     this.iframe.addEventListener("load", () => clearTimeout(loadTimer), { once: true });
+  }
 
-    // Recarga el iframe cada 9 minutos para evitar que D-ID apague el stream
-    setInterval(() => this.reloadIframe(), 9 * 60 * 1000);
+  setupPeriodicReload() {
+    // Recarga el iframe cada 5 minutos para evitar que D-ID apague el stream
+    setInterval(() => this.reloadIframe(), 5 * 60 * 1000);
 
     // Si la pantalla estuvo oculta más de 2 minutos, recarga al volver
     let hiddenAt = null;
