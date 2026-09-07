@@ -72,76 +72,43 @@ const showMenu = (toggleId, navId) => {
 
 showMenu("nav-toggle", "nav-menu");
 
-// ----------------- CHAT D-ID -----------------
+// ----------------- RESILIENCIA KIOSCO -----------------
+// El agente D-ID ya no vive en un iframe (lo monta el SDK oficial en
+// #did-agent-container), asi que el watchdog recarga la pagina completa.
+function setupKioskWatchdog() {
+  let lastInteraction = Date.now();
+  ['click', 'touchstart', 'keydown'].forEach((evt) =>
+    document.addEventListener(evt, () => (lastInteraction = Date.now()), { passive: true })
+  );
 
-class DIDChat {
-  constructor(containerId) {
-    this.container = document.getElementById(containerId);
-    this.chatUrl =
-      "https://studio.d-id.com/agents/share?id=v2_agt_p2CXWlw8&utm_source=copy&key=Y2tfSFpaTlpoUDRidmo2MjlaTEpCelRE";
-    this.iframe = null;
-    this.init();
-  }
+  // Recarga cada 5 min solo si nadie esta interactuando, para que D-ID no
+  // apague el stream sin cortar una conversacion en curso.
+  setInterval(() => {
+    if (Date.now() - lastInteraction > 5 * 60 * 1000) location.reload();
+  }, 5 * 60 * 1000);
 
-  init() {
-    this.createIframe();
-    this.armLoadWatchdog();
-    this.setupPeriodicReload();
-  }
-
-  createIframe() {
-    if (this.container.querySelector('.iframe-wrapper')) return;
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "iframe-wrapper";
-    this.iframe = document.createElement("iframe");
-    this.iframe.className = "did-chat-iframe fade-in";
-    this.iframe.src = this.chatUrl;
-    this.iframe.allow = "microphone *; camera *; autoplay *; encrypted-media *; fullscreen *; display-capture *;";
-    this.iframe.title = "D-ID Chat Interface";
-
-    wrapper.appendChild(this.iframe);
-    this.container.appendChild(wrapper);
-  }
-
-  reloadIframe() {
-    if (this.iframe) {
-      this.iframe.src = '';
-      setTimeout(() => {
-        this.iframe.src = this.chatUrl;
-        this.armLoadWatchdog();
-      }, 500);
+  // Si la pantalla estuvo oculta mas de 2 min, recarga al volver
+  let hiddenAt = null;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      hiddenAt = Date.now();
+    } else if (hiddenAt && Date.now() - hiddenAt > 2 * 60 * 1000) {
+      location.reload();
     }
-  }
+  });
 
-  armLoadWatchdog() {
-    // Si esta carga (inicial o de una recarga) no termina en 20s, reintenta.
-    // Esto se re-arma en cada reloadIframe(), no solo al inicio, para que una
-    // recarga fallida (pantalla negra) se autocorrija en vez de esperar al
-    // siguiente ciclo de 5 minutos.
-    const loadTimer = setTimeout(() => this.reloadIframe(), 20000);
-    this.iframe.addEventListener("load", () => clearTimeout(loadTimer), { once: true });
-  }
-
-  setupPeriodicReload() {
-    // Recarga el iframe cada 5 minutos para evitar que D-ID apague el stream
-    setInterval(() => this.reloadIframe(), 5 * 60 * 1000);
-
-    // Si la pantalla estuvo oculta más de 2 minutos, recarga al volver
-    let hiddenAt = null;
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        hiddenAt = Date.now();
-      } else if (hiddenAt && Date.now() - hiddenAt > 2 * 60 * 1000) {
-        this.reloadIframe();
-        hiddenAt = null;
-      }
-    });
-  }
+  // Si el SDK no monta nada en 25 s (pantalla negra), reintenta una vez.
+  setTimeout(() => {
+    const target = document.getElementById("did-agent-container");
+    if (target && target.childElementCount === 0 && !sessionStorage.getItem("didRetry")) {
+      sessionStorage.setItem("didRetry", "1");
+      location.reload();
+    }
+  }, 25000);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const chat = new DIDChat("chat-container");
+  setupKioskWatchdog();
 
   const bgVideo = document.getElementById('bg-video');
   if (bgVideo) {

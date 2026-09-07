@@ -29,7 +29,10 @@
         <!-- Chat (Lado Derecho) -->
         <div class="home-img">
           <div id="chat-container" class="fade-in">
-            
+
+            <!-- Contenedor donde el SDK de D-ID monta el agente -->
+            <div id="did-agent-container" class="iframe-wrapper"></div>
+
             <!-- ✅ CAPA DE BLOQUEO INVISIBLE -->
             <div id="lock-overlay" title="Toque para iniciar"></div>
 
@@ -71,6 +74,17 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="main.js"></script>
+
+    <!-- Agente D-ID (SDK oficial: studio.d-id.com ya no permite embeber por iframe) -->
+    <script type="module"
+      src="https://agent.d-id.com/v2/index.js"
+      data-mode="full"
+      data-client-key="ck_HZZNZhP4bvj629ZLJBzTD"
+      data-agent-id="v2_agt_p2CXWlw8"
+      data-name="did-agent"
+      data-monitor="true"
+      data-target-id="did-agent-container">
+    </script>
     
     <!-- Iconos -->
     <script
