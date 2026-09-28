@@ -24,13 +24,13 @@ The app has three files:
 - **`style.css`** — All styling. Uses CSS custom properties (`--first-color`, z-index layers). Three staggered `.overlay` divs produce the GSAP entrance animation. `#lock-overlay` is the invisible ghost layer that intercepts clicks until the PIN is entered.
 - **`main.js`** — All logic, no dependencies except GSAP (loaded from CDN). Four sections:
   1. **PIN lock** — A transparent `#lock-overlay` div covers the chat. On click it calls `prompt()` for a PIN (`PIN_CORRECTO = "5703"`). Authorization state is stored in `localStorage("pinAccesoAutorizado")`.
-  2. **DIDChat class** — Creates and appends an `<iframe>` pointing to the D-ID agent share URL (`this.chatUrl` at line 81). To swap the AI agent, change only that URL string.
+  2. **D-ID Web SDK v2 Integration** — Mounted directly in `#did-agent-container` via the script tag in `index.html`.
   3. **GSAP animations** — Entrance overlays sweep off-screen, then home elements fade in with staggered delays.
   4. **Auto-refresh** — After 5 minutes of inactivity, shows a "still there?" message and reloads after 5 s if no interaction. Any click/touch cancels it.
 
 ## Key Details
 
-- **To change the D-ID agent**: edit `this.chatUrl` on line 81 of `main.js`. The value must be a quoted string.
+- **To change the D-ID agent**: update `data-client-key` and `data-agent-id` in the D-ID `<script>` tag inside `index.html`.
 - **To change the PIN**: edit `PIN_CORRECTO` on line 2 of `main.js`.
 - The lock/refresh control buttons (top-right, `.control-buttons`) use Ionicons loaded from CDN. The lock button clears `localStorage` and reloads; the refresh button optionally clears storage before a cache-busted reload.
 - DevTools are blocked client-side (F12, Ctrl+Shift+I/J/C, Ctrl+U, right-click are all suppressed).
